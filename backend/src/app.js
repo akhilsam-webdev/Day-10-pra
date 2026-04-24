@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const noteModel = require("./models/note.model");
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(express.static(path.join(__dirname, "../public")));
 
+// 🔹 CREATE
 app.post("/api/note", async (req, res) => {
   const { title, diss } = req.body;
 
@@ -20,6 +23,7 @@ app.post("/api/note", async (req, res) => {
   });
 });
 
+// 🔹 GET ALL
 app.get("/api/note", async (req, res) => {
   const note = await noteModel.find();
   res.status(200).json({
@@ -28,6 +32,7 @@ app.get("/api/note", async (req, res) => {
   });
 });
 
+// 🔹 DELETE ONE
 app.delete("/api/note/:id", async (req, res) => {
   const { id } = req.params;
   const deleteNote = await noteModel.findByIdAndDelete(id);
@@ -37,6 +42,7 @@ app.delete("/api/note/:id", async (req, res) => {
   });
 });
 
+// 🔹 UPDATE PARTIAL
 app.patch("/api/note/:id", async (req, res) => {
   const { id } = req.params;
   const { diss } = req.body;
@@ -47,6 +53,7 @@ app.patch("/api/note/:id", async (req, res) => {
   });
 });
 
+// 🔹 UPDATE FULL
 app.put("/api/note/:id", async (req, res) => {
   const { id } = req.params;
   const { title, diss } = req.body;
@@ -61,6 +68,7 @@ app.put("/api/note/:id", async (req, res) => {
   });
 });
 
+// 🔹 DELETE ALL
 app.delete("/api/note", async (req, res) => {
   await noteModel.deleteMany();
   res.status(200).json({
@@ -68,4 +76,15 @@ app.delete("/api/note", async (req, res) => {
   });
 });
 
+// 🔹 WILDCARD (SPA routing)
+// app.use("*name", (req, res) => {
+//   res.sendFile(path.join(__dirname, "..", "/public/index.html"));
+// });
+
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"));
+});
+
+
 module.exports = app;
+
