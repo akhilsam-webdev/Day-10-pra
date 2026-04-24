@@ -14,7 +14,7 @@ const App = () => {
 
   const fetchNotes = () => {
     axios
-      .get("http://localhost:3000/api/note")
+      .get("/api/note")
       .then((res) => {
         setNotes(res.data.note);
       })
@@ -28,7 +28,7 @@ const App = () => {
     if (editId) {
       // UPDATE
       axios
-        .put(`http://localhost:3000/api/note/${editId}`, {
+        .put(`/api/note/${editId}`, {
           title,
           diss,
         })
@@ -40,7 +40,7 @@ const App = () => {
     } else {
       // CREATE
       axios
-        .post("http://localhost:3000/api/note", {
+        .post("/api/note", {
           title,
           diss,
         })
@@ -55,7 +55,7 @@ const App = () => {
   // 🔹 Delete
   const handleDelete = (id) => {
     axios
-      .delete(`http://localhost:3000/api/note/${id}`)
+      .delete(`/api/note/${id}`)
       .then(() => fetchNotes())
       .catch((err) => console.log(err));
   };
