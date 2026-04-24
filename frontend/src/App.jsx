@@ -1,53 +1,122 @@
 import axios from "axios";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const App = () => {
   const [notes, setNotes] = useState([]);
+  const [title, setTitle] = useState("");
+  const [diss, setDiss] = useState("");
+  const [editId, setEditId] = useState(null);
+
+  // 🔹 Fetch Notes
   useEffect(() => {
     fetchNotes();
   }, []);
 
-  function fetchNotes() {
-    axios.get("http://localhost:3000/api/note").then((res) => {
-      console.log(res.data.note);
-      setNotes(res.data.note);
-    });
-  }
+  const fetchNotes = () => {
+    axios
+      .get("http://localhost:3000/api/note")
+      .then((res) => {
+        setNotes(res.data.note);
+      })
+      .catch((err) => console.log(err));
+  };
 
-  function handelSubmit(e) {
+  // 🔹 Create + Update
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    const { title, diss } = e.target;
-    console.log(title.value, diss.value);
+    if (editId) {
+      // UPDATE
+      axios
+        .put(`http://localhost:3000/api/note/${editId}`, {
+          title,
+          diss,
+        })
+        .then(() => {
+          fetchNotes();
+          resetForm();
+        })
+        .catch((err) => console.log(err));
+    } else {
+      // CREATE
+      axios
+        .post("http://localhost:3000/api/note", {
+          title,
+          diss,
+        })
+        .then(() => {
+          fetchNotes();
+          resetForm();
+        })
+        .catch((err) => console.log(err));
+    }
+  };
 
+  // 🔹 Delete
+  const handleDelete = (id) => {
     axios
-      .post("http://localhost:3000/api/note", {
-        title: title.value,
-        diss: diss.value,
-      })
-      .then((res) => {
-        console.log(res);
-        fetchNotes()
-      });
+      .delete(`http://localhost:3000/api/note/${id}`)
+      .then(() => fetchNotes())
+      .catch((err) => console.log(err));
+  };
 
-    e.target.reset();
-  }
+  // 🔹 Edit Click → populate form
+  const handleEditClick = (note) => {
+    setTitle(note.title);
+    setDiss(note.diss);
+    setEditId(note._id);
+  };
+
+  // 🔹 Reset form
+  const resetForm = () => {
+    setTitle("");
+    setDiss("");
+    setEditId(null);
+  };
 
   return (
     <div className="app">
+      {/* 🔹 FORM */}
       <div className="form">
-        <form onSubmit={handelSubmit}>
-          <input type="text" name="title" placeholder="enter title" />
-          <input type="text" name="diss" placeholder="enter discription" />
-          <button>Create note</button>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Enter title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
+          <input
+            type="text"
+            placeholder="Enter description"
+            value={diss}
+            onChange={(e) => setDiss(e.target.value)}
+          />
+
+          <button type="submit">
+            {editId ? "Update Note" : "Create Note"}
+          </button>
+
+          {editId && (
+            <button type="button" onClick={resetForm}>
+              Cancel
+            </button>
+          )}
         </form>
       </div>
+
+      {/* 🔹 NOTES */}
       <div className="cards">
         {notes.map((item) => (
           <div key={item._id} className="card">
             <h2>{item.title}</h2>
             <p>{item.diss}</p>
+
+            <div className="btns">
+              <button onClick={() => handleDelete(item._id)}>Delete</button>
+
+              <button onClick={() => handleEditClick(item)}>Edit</button>
+            </div>
           </div>
         ))}
       </div>
